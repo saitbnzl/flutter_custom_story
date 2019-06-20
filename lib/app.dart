@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:flutter_kitapsec/commons/config.dart';
-
-
+import 'package:flutter_kitapsec/routes.dart';
+import 'dart:io' show Platform;
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 class KitapSecMobileApp extends StatelessWidget {
-  final flutterWebViewPlugin = FlutterWebviewPlugin();
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-          child: Stack(
-            children: <Widget>[
-              WebviewScaffold(
-                url: Config.WEBVIEW_URL,
-              )
-            ],
-          ),
-        ),
-      ),
+    return MaterialApp(
+      title: Config.STR_APPLICATION_TITLE,
+      onGenerateRoute: (RouteSettings settings) {
+        if (Config.DEBUG) {
+          print("Generating Platform Named Route: ${settings.name} with arguments: ${settings.arguments.toString()}");
+        }
+        if (ROUTES[settings.name] != null) {
+          return platformPageRoute(builder: (BuildContext context) {
+            return ROUTES[settings.name](settings);
+          });
+        }
+      },
+
     );
   }
 }
