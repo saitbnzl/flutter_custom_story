@@ -221,7 +221,13 @@ class _CardFlipperState extends State<CardFlipper>
     return GestureDetector(
       onTap: () {
         print("Tıkladım");
-        _onPanStart;
+        if(scrollPercent<1-(1/widget.cards.length)){
+          scrollPercent = scrollPercent+1/widget.cards.length;
+          _onPanEnd(null);
+        }else{
+          scrollPercent=0;
+          _onPanEnd(null);
+        }
       },
       onHorizontalDragStart: _onPanStart,
       onHorizontalDragUpdate: _onPanUpdate,
