@@ -92,15 +92,18 @@ class HomePageState extends State<HomePage> {
                             "http://kilavuzipm.tamtutar.com/open/profile-picture.php?q=thumb-upl5cc4a0d8ce8ba2.91095686-1556390104-1556390104.846-7579469433980816358.jpeg"
                       });*/
                       _pushData = item;
-                      //Navigator.push(context, MaterialPageRoute(builder: (context) => StoryDetails(story, this.stories)),
-                      Navigator.of(context)
-                          .pushNamed("/pages/story", arguments: _pushData)
-                          .then((t) {
+                      Navigator.of(context).pushNamed("/pages/card").then((t) {
                         if (t == true) {
                           print("Dönüş oldu");
                           backWebView();
                         }
                       });
+                      /*Navigator.of(context).pushNamed("/pages/story", arguments: _pushData).then((t) {
+                        if (t == true) {
+                          print("Dönüş oldu");
+                          backWebView();
+                        }
+                      });*/
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
