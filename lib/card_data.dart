@@ -25,7 +25,7 @@ final List<CardViewModel> demoCards = [
   ),
    new CardViewModel(
     backdropAssetPath:
-        'https://iso.500px.com/wp-content/uploads/2016/04/stock-photo-150595123.jpg',
+        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
     address: '10TH STREET NORTH\nTO 14TH STREET NO...',
     minHeightInFeet: 6,
     maxHeightInFeet: 7,

@@ -5,6 +5,7 @@ import 'package:flutter_kitapsec/card_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kitapsec/pages/video_story.dart';
+import 'package:video_player/video_player.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -15,8 +16,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double scrollPercent = 0.0;
 
   @override
-  Widget build(BuildContext context
-      ) {
+  Widget build(BuildContext context) {
     return new WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -35,8 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
             new Expanded(
               child: new CardFlipper(
                   cards: demoCards,
-                  onScroll: (double scrollPercent
-                      ) {
+                  onScroll: (double scrollPercent) {
                     setState(() => this.scrollPercent = scrollPercent);
                   }),
             ),
@@ -65,8 +64,7 @@ class CardFlipper extends StatefulWidget {
   CardFlipper({
     this.cards,
     this.onScroll,
-  }
-      );
+  });
 
   @override
   _CardFlipperState createState() => new _CardFlipperState();
@@ -99,28 +97,25 @@ class _CardFlipperState extends State<CardFlipper>
           }
         });
       })
-      ..addStatusListener((AnimationStatus status
-          ) {
+      ..addStatusListener((AnimationStatus status) {
         print("Status 100.satır");
         print(status);
       });
   }
 
-  void _onPanStart(DragStartDetails details
-      ) {
+  void _onPanStart(DragStartDetails details) {
     startDrag = details.globalPosition;
     startDragPercentScroll = scrollPercent;
   }
 
-  void _onPanUpdate(DragUpdateDetails details
-      ) {
+  void _onPanUpdate(DragUpdateDetails details) {
     final currDrag = details.globalPosition;
     final dragDistance = currDrag.dx - startDrag.dx;
     final singleCardDragPercent = dragDistance / context.size.width;
 
     setState(() {
       scrollPercent = (startDragPercentScroll +
-          (-singleCardDragPercent / widget.cards.length))
+              (-singleCardDragPercent / widget.cards.length))
           .clamp(0.0, 1.0 - (1 / widget.cards.length));
       print('percentScroll: $scrollPercent');
 
@@ -130,8 +125,7 @@ class _CardFlipperState extends State<CardFlipper>
     });
   }
 
-  void _onPanEnd(DragEndDetails details
-      ) {
+  void _onPanEnd(DragEndDetails details) {
     finishScrollStart = scrollPercent;
     finishScrollEnd =
         (scrollPercent * widget.cards.length).round() / widget.cards.length;
@@ -145,15 +139,13 @@ class _CardFlipperState extends State<CardFlipper>
 
   List<Widget> _buildCards() {
     int index = -1;
-    return widget.cards.map((CardViewModel viewModel
-        ) {
+    return widget.cards.map((CardViewModel viewModel) {
       ++index;
       return _buildCard(viewModel, index, widget.cards.length, scrollPercent);
     }).toList();
   }
 
-  Matrix4 _buildCardProjection(double scrollPercent
-      ) {
+  Matrix4 _buildCardProjection(double scrollPercent) {
     // Pre-multiplied matrix of a projection matrix and a view matrix.
     //
     // Projection matrix is a simplified perspective matrix
@@ -176,18 +168,20 @@ class _CardFlipperState extends State<CardFlipper>
     final angle = scrollPercent * pi / 8;
     final horizontalTranslation = 0.0;
     Matrix4 projection = new Matrix4.identity()
-      ..setEntry(0, 0, 1 / radius)..setEntry(1, 1, 1 / radius)..setEntry(
-          3, 2, -perspective)..setEntry(2, 3, -radius)..setEntry(
-          3, 3, perspective * radius + 1.0);
+      ..setEntry(0, 0, 1 / radius)
+      ..setEntry(1, 1, 1 / radius)
+      ..setEntry(3, 2, -perspective)
+      ..setEntry(2, 3, -radius)
+      ..setEntry(3, 3, perspective * radius + 1.0);
 
     // Model matrix by first translating the object from the origin of the world
     // by radius in the z axis and then rotating against the world.
     final rotationPointMultiplier = angle > 0.0 ? angle / angle.abs() : 1.0;
     print('Angle: $angle');
     projection *= new Matrix4.translationValues(
-        horizontalTranslation + (rotationPointMultiplier * 300.0),
-        0.0,
-        0.0) *
+            horizontalTranslation + (rotationPointMultiplier * 300.0),
+            0.0,
+            0.0) *
         new Matrix4.rotationY(angle) *
         new Matrix4.translationValues(0.0, 0.0, radius) *
         new Matrix4.translationValues(
@@ -196,11 +190,12 @@ class _CardFlipperState extends State<CardFlipper>
     return projection;
   }
 
-  Widget _buildCard(CardViewModel viewModel,
-      int cardIndex,
-      int cardCount,
-      double scrollPercent,
-      ) {
+  Widget _buildCard(
+    CardViewModel viewModel,
+    int cardIndex,
+    int cardCount,
+    double scrollPercent,
+  ) {
     final cardScrollPercent = scrollPercent / (1 / cardCount);
     final parallax = scrollPercent - (cardIndex / widget.cards.length);
 
@@ -213,6 +208,8 @@ class _CardFlipperState extends State<CardFlipper>
           child: new Card(
             viewModel: viewModel,
             parallaxPercent: parallax,
+            isActive: scrollPercent > (cardIndex - 0.5) / widget.cards.length &&
+                scrollPercent < (cardIndex + 0.5) / widget.cards.length,
           ),
         ),
       ),
@@ -220,8 +217,7 @@ class _CardFlipperState extends State<CardFlipper>
   }
 
   @override
-  Widget build(BuildContext context
-      ) {
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         print("Tıkladım");
@@ -238,20 +234,41 @@ class _CardFlipperState extends State<CardFlipper>
   }
 }
 
-class Card extends StatelessWidget {
+class Card extends StatefulWidget {
   final CardViewModel viewModel;
+  bool isActive;
   final double
-  parallaxPercent; // [0.0, 1.0] (0.0 for all the way right, 1.0 for all the way left)
+      parallaxPercent; // [0.0, 1.0] (0.0 for all the way right, 1.0 for all the way left)
 
-  Card({
-    this.viewModel,
-    this.parallaxPercent = 0.0,
+  Card({this.viewModel, this.parallaxPercent = 0.0, this.isActive});
+  createState() => CardState();
+}
+
+class CardState extends State<Card> {
+  VideoPlayerController _controller;
+  Future<void> _initializeVideoPlayerFuture;
+  bool isVideo = false;
+  @override
+  void initState() {
+    if (widget.viewModel.backdropAssetPath.endsWith('mp4')) {
+      isVideo = true;
+      _controller =
+          VideoPlayerController.network(widget.viewModel.backdropAssetPath);
+      _controller.setLooping(true);
+
+      _initializeVideoPlayerFuture = _controller.initialize();
+    }
+    super.initState();
   }
-      );
 
   @override
-  Widget build(BuildContext context
-      ) {
+  Widget build(BuildContext context) {
+    if (isVideo) {
+      if (widget.isActive && !_controller.value.isPlaying)
+        _controller.play();
+      else if (!widget.isActive && _controller.value.isPlaying)
+        _controller.pause();
+    }
     return new Stack(
       fit: StackFit.expand,
       children: <Widget>[
@@ -260,31 +277,36 @@ class Card extends StatelessWidget {
           borderRadius: new BorderRadius.circular(5.0),
           child: new Container(
             child: new FractionalTranslation(
-              translation: new Offset(parallaxPercent * 3.0, 0.0),
+              translation: new Offset(widget.parallaxPercent * 3.0, 0.0),
               child: new OverflowBox(
                   maxWidth: double.infinity,
                   /*Emre Begin*/
+                  child: isVideo
+                      ? AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          // Use the VideoPlayer widget to display the video.
+                          child: VideoPlayer(_controller))
+                      : FadeInImage(
+                          fadeInDuration: Duration(milliseconds: 1000),
+                          fadeOutCurve: Curves.decelerate,
+                          //placeholder: NetworkImage(viewModel.backdropAssetPath),
+                          placeholder: AssetImage("assets/img/loader.gif"),
+                          image:
+                              NetworkImage(widget.viewModel.backdropAssetPath),
+                          fit: BoxFit.cover,
+                        )
 
-                  child: FadeInImage(
-                    fadeInDuration: Duration(milliseconds: 1000),
-                    fadeOutCurve: Curves.decelerate,
-                    //placeholder: NetworkImage(viewModel.backdropAssetPath),
-                    placeholder: AssetImage("assets/img/loader.gif"),
-                    image: NetworkImage(viewModel.backdropAssetPath),
-                    fit: BoxFit.cover,
-                  )
-
-                /*child: Image.network(
+                  /*child: Image.network(
                   viewModel.backdropAssetPath,
                   fit: BoxFit.cover,
                 ),
                 Emre End*/
 
-                /*child: new Image.asset(
+                  /*child: new Image.asset(
                   viewModel.backdropAssetPath,
                   fit: BoxFit.cover,
                 ),  */
-              ),
+                  ),
             ),
           ),
         ),
@@ -423,19 +445,17 @@ class BottomBar extends StatelessWidget {
   BottomBar({
     this.cardCount,
     this.scrollPercent,
-  }
-      );
+  });
 
   @override
-  Widget build(BuildContext context
-      ) {
+  Widget build(BuildContext context) {
     return new Container(
       width: double.infinity,
       child: new Padding(
         //padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
         /*Emre Begin*/
         padding:
-        const EdgeInsets.only(top: 0.0, bottom: 5.0, left: 0.0, right: 0.0),
+            const EdgeInsets.only(top: 0.0, bottom: 5.0, left: 0.0, right: 0.0),
         /*Emre End*/
 
         child: new Row(
@@ -466,12 +486,10 @@ class ScrollIndicator extends StatelessWidget {
   ScrollIndicator({
     this.cardCount,
     this.scrollPercent,
-  }
-      );
+  });
 
   @override
-  Widget build(BuildContext context
-      ) {
+  Widget build(BuildContext context) {
     return new CustomPaint(
       painter: new ScrollIndicatorPainter(
         cardCount: cardCount,
@@ -491,18 +509,15 @@ class ScrollIndicatorPainter extends CustomPainter {
   ScrollIndicatorPainter({
     this.cardCount,
     this.scrollPercent,
-  }
-      )
-      : trackPaint = new Paint()
-    ..color = const Color(0xFF444444)
-    ..style = PaintingStyle.fill,
+  })  : trackPaint = new Paint()
+          ..color = const Color(0xFF444444)
+          ..style = PaintingStyle.fill,
         thumbPaint = new Paint()
           ..color = Colors.white
           ..style = PaintingStyle.fill;
 
   @override
-  void paint(Canvas canvas, Size size
-      ) {
+  void paint(Canvas canvas, Size size) {
     // Draw track
     canvas.drawRRect(
       new RRect.fromRectAndCorners(
@@ -548,8 +563,7 @@ class ScrollIndicatorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate
-      ) {
+  bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
 }
